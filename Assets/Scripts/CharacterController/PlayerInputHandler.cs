@@ -44,16 +44,13 @@ public class PlayerInputHandler : MonoBehaviour
         HandleQuickstep();
     }
 
-    public void OnJump()
+    public void OnJump(CallbackContext context)
     {
-
+        if(context.performed)
+        {
+            characterBehavior.TriggerJump();
+        }
     }
-
-    public void OnQuickStep(CallbackContext context)
-    {
-        Debug.Log("Quick step!");
-    }
-
 
     private void HandleQuickstep()
     {
@@ -62,41 +59,37 @@ public class PlayerInputHandler : MonoBehaviour
         else
         {
             // Handle D-pad or joystick left quickstep
-            if (moveInput.x < -0.5f)
+            if (moveInput.x < -0.8f)
             {
                 if (readyStep && Time.time - lastTapTimeLeft < quickstepInputCD)
                 {
                     TriggerQuickstep(Vector3.left);
-                    lastTimeQuickstep = Time.time;
                 }
                 lastTapTimeLeft = Time.time;
+
+                readyStep = false;
             }
 
             // Handle D-pad or joystick right quickstep
-            if (moveInput.x > 0.5f)
+            if (moveInput.x > 0.8f)
             {
                 if (readyStep && Time.time - lastTapTimeRight < quickstepInputCD)
                 {
                     TriggerQuickstep(Vector3.right);
-                    lastTimeQuickstep = Time.time;
                 }
                 lastTapTimeRight = Time.time;
+                
+                readyStep = false;
             }
 
-            readyStep = false;
         }
     }
 
     private void TriggerQuickstep(Vector3 direction)
     {
-        Debug.Log("Quick step!");
-        characterBehavior.TriggerQuickStep();
-    }
-
-    IEnumerator waitForSecondCallback(float time, Action callback)
-    {
-        yield return new WaitForSeconds(time);
-        callback?.Invoke();
+        //Debug.Log("Quick step!");
+        characterBehavior.TriggerQuickStep(direction);
+        lastTimeQuickstep = Time.time;
     }
 
     public void OnAttack(CallbackContext context)
@@ -107,4 +100,14 @@ public class PlayerInputHandler : MonoBehaviour
     public void OnHeavyAttack(CallbackContext context) { }
 
     public void OnBlock(CallbackContext context) { }
+
+    #region COROUTINES
+
+    IEnumerator waitForSecondCallback(float time, Action callback)
+    {
+        yield return new WaitForSeconds(time);
+        callback?.Invoke();
+    }
+
+    #endregion
 }
