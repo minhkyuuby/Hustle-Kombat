@@ -99,7 +99,15 @@ public class PlayerInputHandler : MonoBehaviour
 
     public void OnHeavyAttack(CallbackContext context) { }
 
-    public void OnBlock(CallbackContext context) { }
+    public void OnBlock(CallbackContext context) { 
+        if(context.performed)
+        {
+            characterBehavior.PerformGuard();
+        } else if(context.canceled)
+        {
+            characterBehavior.GuardCancel();
+        }
+    }
 
     #region COROUTINES
 

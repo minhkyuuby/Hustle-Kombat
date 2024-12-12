@@ -423,6 +423,17 @@
                 {
                     "name": "",
                     "id": "3ea8dfe2-4681-497d-8f56-264193132007",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Block",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a73f1513-2869-4a7b-9139-b3a09f5a4191",
                     "path": "",
                     "interactions": "",
                     "processors": "",

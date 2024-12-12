@@ -22,6 +22,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     Vector2 moveDirection = Vector2.zero;
     bool isGround = true;
     bool isQuickstepping = false;
+    bool isGuarding = false;
 
     #endregion
 
@@ -54,7 +55,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     bool isInputMoving = false;
     void handleMovement()
     {
-        if (isQuickstepping || !isGround) return;
+        if (!isGround || isQuickstepping || isGuarding) return;
 
         moveInputAbs = Mathf.Abs(moveDirection.x);
 
@@ -105,7 +106,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     Tween quickstepTween;
     public void TriggerQuickStep(Vector3 direction)
     {
-        if (!isGround || isQuickstepping) return;
+        if (!isGround || isQuickstepping || isGuarding) return;
         if(direction.x > 0f)
         {
             animator.SetTrigger("quickStepF");
@@ -117,7 +118,7 @@ public class BaseCharacterBehavior : MonoBehaviour
         }
         quickstepTween.Kill();
         isQuickstepping = true;
-        quickstepTween = DOVirtual.DelayedCall(0.35f, () =>
+        quickstepTween = DOVirtual.DelayedCall(0.3f, () =>
         {
             isQuickstepping = false;
         });
@@ -136,17 +137,32 @@ public class BaseCharacterBehavior : MonoBehaviour
         animator.SetTrigger("jump");
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         jumped = true;
-        DOVirtual.DelayedCall(1.2f, ()=>
+        DOVirtual.DelayedCall(1.1f, ()=>
         {
             jumped = false;
         });
     }
 
-    public void HoldGuard()
+    Tween guardCancelTween;
+    public void PerformGuard()
     {
+        if(!isGround) return;
+        guardCancelTween.Kill();
+        isGuarding = true;
+        animator.StopPlayback();
         animator.SetBool("isGuard", true);
+        //rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
     }
 
+    public void GuardCancel()
+    {
+        if(!isGuarding) return;
+        animator.SetBool("isGuard", false);
+        guardCancelTween = DOVirtual.DelayedCall(0.1f, () =>
+        {
+            isGuarding = false;
+        });
+    }
 
 
     #endregion

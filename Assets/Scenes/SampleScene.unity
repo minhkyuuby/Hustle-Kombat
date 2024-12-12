@@ -3229,7 +3229,7 @@ MonoBehaviour:
   animator: {fileID: 2929119099002814716}
   groundChecker: {fileID: 1593431291}
   moveSpeed: 3.2
-  quickStepSpeed: 8
+  quickStepSpeed: 10
   jumpForce: 10
 --- !u!114 &8073086774255446581
 MonoBehaviour:
