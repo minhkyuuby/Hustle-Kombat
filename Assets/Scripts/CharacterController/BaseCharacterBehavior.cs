@@ -24,6 +24,8 @@ public class BaseCharacterBehavior : MonoBehaviour
     bool isQuickstepping = false;
     bool isGuarding = false;
 
+    bool isAttacking = false;
+
     #endregion
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -36,6 +38,8 @@ public class BaseCharacterBehavior : MonoBehaviour
     void FixedUpdate()
     {
         isGround = groundChecker.transform.position.y <= 0.15f;
+        //isAttacking = 
+        Debug.Log(animator.GetCurrentAnimatorStateInfo(0).shortNameHash.ToString());
 
         animator.SetBool("isGround", isGround);
         handleMovement();
@@ -43,7 +47,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     }
 
     #region IN FIXED-UPDATE METHODS
-    
+
     // Movement Handle
     private float lastTimeInputMove = -1f;
     private float timeFromMoveToStop = 0.35f;
@@ -55,7 +59,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     bool isInputMoving = false;
     void handleMovement()
     {
-        if (!isGround || isQuickstepping || isGuarding) return;
+        if (!isGround || isQuickstepping || isGuarding || isAttacking) return;
 
         moveInputAbs = Mathf.Abs(moveDirection.x);
 
@@ -63,7 +67,7 @@ public class BaseCharacterBehavior : MonoBehaviour
 
         if (moveInputAbs < 0.1f)
         {
-            if(isInputMoving)
+            if (isInputMoving)
             {
                 lastTimeInputMove = Time.time;
                 lastMoveAnimSpeed = animator.GetFloat("moveAnimSpeed");
@@ -75,23 +79,25 @@ public class BaseCharacterBehavior : MonoBehaviour
             {
                 animator.SetFloat("moveAnimSpeed", Mathf.Lerp(lastMoveAnimSpeed, 1f, (Time.time - lastTimeInputMove) / timeFromMoveToStop));
                 vecX = Mathf.Lerp(moveSide, 0f, (Time.time - lastTimeInputMove) / timeFromMoveToStop) * moveSpeed;
+                //animator.SetBool("isMoving", true);
             }
         } else
         {
+            //animator.SetBool("isMoving", true);
             isInputMoving = true;
-            moveSide = moveDirection.x > 0 ? 1: -1;
+            moveSide = moveDirection.x > 0 ? 1 : -1;
 
             animator.SetFloat("horizontalMove", moveDirection.x);
             animator.SetFloat("moveAnimSpeed", Mathf.Clamp(Mathf.Abs(moveInputAbs), 0.5f, 1f));
         }
-        
+
         rb.linearVelocity = new Vector2(vecX, rb.linearVelocity.y);
 
     }
 
     void handleDashing()
     {
-        if (!isQuickstepping || !isGround) return;
+        if (!isQuickstepping || !isGround || isAttacking) return;
         rb.linearVelocity = new Vector2(moveSide * quickStepSpeed, rb.linearVelocity.y);
     }
 
@@ -107,7 +113,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     public void TriggerQuickStep(Vector3 direction)
     {
         if (!isGround || isQuickstepping || isGuarding) return;
-        if(direction.x > 0f)
+        if (direction.x > 0f)
         {
             animator.SetTrigger("quickStepF");
             moveSide = 1;
@@ -118,26 +124,30 @@ public class BaseCharacterBehavior : MonoBehaviour
         }
         quickstepTween.Kill();
         isQuickstepping = true;
-        quickstepTween = DOVirtual.DelayedCall(0.3f, () =>
+        quickstepTween = DOVirtual.DelayedCall(0.32f, () =>
         {
             isQuickstepping = false;
         });
     }
 
-    bool jumped = false; // handle double input problem with this var
-    public void TriggerJump()
+    void CancelQuickstep()
     {
-        if(jumped || !isGround) return;
-        if(isQuickstepping)
+        if (isQuickstepping)
         {
             quickstepTween.Kill();
             isQuickstepping = false;
         }
-        animator.StopPlayback();
+    }
+
+    bool jumped = false; // handle double input problem with this var
+    public void TriggerJump()
+    {
+        if (jumped || !isGround || isAttacking) return;
+        CancelQuickstep();
         animator.SetTrigger("jump");
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         jumped = true;
-        DOVirtual.DelayedCall(1.1f, ()=>
+        DOVirtual.DelayedCall(1f, () =>
         {
             jumped = false;
         });
@@ -146,17 +156,16 @@ public class BaseCharacterBehavior : MonoBehaviour
     Tween guardCancelTween;
     public void PerformGuard()
     {
-        if(!isGround) return;
+        if (!isGround || isQuickstepping) return;
         guardCancelTween.Kill();
         isGuarding = true;
-        animator.StopPlayback();
         animator.SetBool("isGuard", true);
-        //rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
     }
 
     public void GuardCancel()
     {
-        if(!isGuarding) return;
+        if (!isGuarding) return;
         animator.SetBool("isGuard", false);
         guardCancelTween = DOVirtual.DelayedCall(0.1f, () =>
         {
@@ -164,6 +173,29 @@ public class BaseCharacterBehavior : MonoBehaviour
         });
     }
 
+    Tween attackTween;
+    public void PerformPunchAttack()
+    {
+        if (!isGround || isAttacking || isQuickstepping) return;
+        animator.SetTrigger("punch");
+        isAttacking = true;
+        attackTween.Kill();
+        attackTween = DOVirtual.DelayedCall(0.32f, () =>
+        {
+            isAttacking = false;
+        });
+    }
 
+    public void PerformKickAttack()
+    {
+        if (!isGround || isQuickstepping || isAttacking) return;
+        animator.SetTrigger("kick");
+        isAttacking = true;
+        attackTween.Kill();
+        attackTween = DOVirtual.DelayedCall(0.32f, () =>
+        {
+            isAttacking = false;
+        });
+    }
     #endregion
 }

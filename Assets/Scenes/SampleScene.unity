@@ -3229,7 +3229,7 @@ MonoBehaviour:
   animator: {fileID: 2929119099002814716}
   groundChecker: {fileID: 1593431291}
   moveSpeed: 3.2
-  quickStepSpeed: 10
+  quickStepSpeed: 8
   jumpForce: 10
 --- !u!114 &8073086774255446581
 MonoBehaviour:
@@ -3376,6 +3376,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: e2c07c5b-8e79-4795-a8e2-e844a45e1a13
     m_ActionName: Player/Block
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 8073086774255446582}
+        m_TargetAssemblyTypeName: PlayerInputHandler, Assembly-CSharp
+        m_MethodName: OnHeavyAttack
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 80756e23-057f-4a06-9d97-8df5d221326c
+    m_ActionName: 'Player/KickAttack[/Mouse/middleButton,/DualSenseGamepadHID/buttonNorth]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player

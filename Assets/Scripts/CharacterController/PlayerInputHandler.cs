@@ -18,7 +18,6 @@ public class PlayerInputHandler : MonoBehaviour
     private float lastTapTimeLeft = -1f;
     private float lastTapTimeRight = -1f;
     private float lastTimeQuickstep = -1f;
-    private bool isQuickstepEnable = true;
 
     private bool readyStep = false;
 
@@ -94,10 +93,18 @@ public class PlayerInputHandler : MonoBehaviour
 
     public void OnAttack(CallbackContext context)
     {
-
+        if(context.performed)
+        {
+            characterBehavior.PerformPunchAttack();
+        }
     }
 
-    public void OnHeavyAttack(CallbackContext context) { }
+    public void OnHeavyAttack(CallbackContext context) {
+        if (context.performed)
+        {
+            characterBehavior.PerformKickAttack();
+        }
+    }
 
     public void OnBlock(CallbackContext context) { 
         if(context.performed)
