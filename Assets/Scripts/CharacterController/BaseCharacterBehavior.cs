@@ -18,8 +18,14 @@ public class BaseCharacterBehavior : MonoBehaviour
     public float quickStepSpeed = 15f;
     public float jumpForce = 10f;
 
+    [Header("Scene References")]
+    [SerializeField]
+    private GameObject oponentObject;
+
     #region VARIABLES
     Vector2 moveDirection = Vector2.zero;
+    bool isFacingRight = true;
+
     bool isGround = true;
     bool isQuickstepping = false;
     bool isGuarding = false;
@@ -37,8 +43,14 @@ public class BaseCharacterBehavior : MonoBehaviour
 
     void FixedUpdate()
     {
+        isFacingRight = oponentObject.transform.position.x > transform.position.x;
+        //if(isAttacking || )
+        transform.eulerAngles = new Vector2(0f, isFacingRight ? 90f : -90f);
+
+        Debug.Log("forward vector: " + transform.forward);
+
         isGround = groundChecker.transform.position.y <= 0.15f;
-        //isAttacking = 
+
         Debug.Log(animator.GetCurrentAnimatorStateInfo(0).shortNameHash.ToString());
 
         animator.SetBool("isGround", isGround);

@@ -751,6 +751,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &655683239 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4132312772176831909, guid: 64b182395c0b6744a920c74bce3ece13, type: 3}
+  m_PrefabInstance: {fileID: 1958830690}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -3231,6 +3236,7 @@ MonoBehaviour:
   moveSpeed: 3.2
   quickStepSpeed: 8
   jumpForce: 10
+  oponentObject: {fileID: 655683239}
 --- !u!114 &8073086774255446581
 MonoBehaviour:
   m_ObjectHideFlags: 0
