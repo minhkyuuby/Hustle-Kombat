@@ -26,6 +26,7 @@ public class BaseCharacterBehavior : MonoBehaviour
 
     bool isAttacking = false;
 
+    bool isInvincible = false;
     #endregion
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -103,6 +104,14 @@ public class BaseCharacterBehavior : MonoBehaviour
 
 
     #endregion
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Impact"))
+        {
+            animator.SetTrigger("hit");
+        }
+    }
 
     #region PUBLIC METHODS
     public void SetMoveDirection(Vector2 value) {
