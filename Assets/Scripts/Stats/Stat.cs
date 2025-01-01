@@ -1,7 +1,10 @@
+using System;
 using UnityEngine;
 
 public class Stat : MonoBehaviour
 {
+    public Action<int, int, int> OnStatChange;
+
     int healthPoint = 100;
     int stamina = 100;
     int aura = 10;
@@ -27,6 +30,7 @@ public class Stat : MonoBehaviour
     {
         healthPoint -= amount;
         if(healthPoint < 0) healthPoint = 0;
+        OnStatChange?.Invoke(healthPoint, stamina, aura);
     }
 
     public bool CostStamina(int amount)
@@ -51,4 +55,6 @@ public class Stat : MonoBehaviour
     {
         aura += amount;
     }
+
+
 }
