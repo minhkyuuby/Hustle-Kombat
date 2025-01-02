@@ -21,8 +21,10 @@ public class CharacterStatUI : MonoBehaviour
         characaterStat.OnStatChange -= OnStatChange;
     }
 
-    void OnStatChange(int hp, int sta, int aura)
+    void OnStatChange(float hpPercent, float staPercent, float auraPercent)
     {
-
+        healthBarImg.fillAmount = hpPercent;
+        staminaBarImg.fillAmount = staPercent;
+        auraBarImg.fillAmount = auraPercent;
     }
 }

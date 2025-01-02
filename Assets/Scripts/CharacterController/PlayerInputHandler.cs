@@ -116,6 +116,20 @@ public class PlayerInputHandler : MonoBehaviour
         }
     }
 
+    public void OnSkill(CallbackContext context) {
+        if (context.performed)
+        {
+            characterBehavior.PerformSkill();
+        }
+    }
+
+    public void OnUltimate(CallbackContext context)
+    {
+        if (context.performed)
+        {
+            characterBehavior.PerformUltimate();
+        }
+    }
     #region COROUTINES
 
     IEnumerator waitForSecondCallback(float time, Action callback)

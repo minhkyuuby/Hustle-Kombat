@@ -12,11 +12,16 @@ public class BaseCharacterBehavior : MonoBehaviour
     private Animator animator;
 
     [SerializeField]
+    private Stat stat;
+
+    [SerializeField]
     private GameObject groundChecker;
 
     public float moveSpeed = 5f;
     public float quickStepSpeed = 15f;
     public float jumpForce = 10f;
+    public float hitRecoverTime = .2f;
+    public float recoverTime = 1.5f;
 
     #region VARIABLES
     Vector2 moveDirection = Vector2.zero;
@@ -27,6 +32,9 @@ public class BaseCharacterBehavior : MonoBehaviour
     bool isAttacking = false;
 
     bool isInvincible = false;
+
+    bool isHit = false;
+    bool isTired = false;
     #endregion
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -36,6 +44,7 @@ public class BaseCharacterBehavior : MonoBehaviour
             rb = GetComponent<Rigidbody>();
     }
 
+    #region IN FIXED-UPDATE METHODS
     void FixedUpdate()
     {
         isGround = groundChecker.transform.position.y <= 0.15f;
@@ -46,8 +55,6 @@ public class BaseCharacterBehavior : MonoBehaviour
         handleMovement();
         handleDashing();
     }
-
-    #region IN FIXED-UPDATE METHODS
 
     // Movement Handle
     private float lastTimeInputMove = -1f;
@@ -98,23 +105,49 @@ public class BaseCharacterBehavior : MonoBehaviour
 
     void handleDashing()
     {
-        if (!isQuickstepping || !isGround || isAttacking) return;
+        if (!isQuickstepping || !isGround || isAttacking || isTired) return;
         rb.linearVelocity = new Vector2(moveSide * quickStepSpeed, rb.linearVelocity.y);
     }
 
 
     #endregion
+    Tween hitRecoverTween;
 
     private void OnTriggerEnter(Collider other)
     {
+        if (isHit) return;
+
         if (other.gameObject.CompareTag("Impact"))
         {
-            animator.SetTrigger("hit");
+            if (other.TryGetComponent(out DamageApplier dmg))
+            {
+                if (dmg.sourceObject != gameObject)
+                {
+                    isHit = true;
+                    hitRecoverTween = DOVirtual.DelayedCall(hitRecoverTime, () =>
+                    {
+                        isHit = false;
+                    });
+
+                    if(stat.LoseHeath(dmg.damageValue))
+                    {
+                        animator.SetTrigger("hit");
+                    } else
+                    {
+                        animator.SetTrigger("death");
+                    }
+                }
+            };
         }
     }
 
     #region PUBLIC METHODS
     public void SetMoveDirection(Vector2 value) {
+        if(isTired)
+        {
+            moveDirection = new Vector2(0, 0);
+            return;
+        }
         moveDirection = new Vector2(value.x, 0);
     }
 
@@ -122,6 +155,9 @@ public class BaseCharacterBehavior : MonoBehaviour
     public void TriggerQuickStep(Vector3 direction)
     {
         if (!isGround || isQuickstepping || isGuarding) return;
+
+        if (!PerformceStatminaAction(20)) return;
+
         if (direction.x > 0f)
         {
             animator.SetTrigger("quickStepF");
@@ -153,6 +189,8 @@ public class BaseCharacterBehavior : MonoBehaviour
     {
         if (jumped || !isGround || isAttacking) return;
         CancelQuickstep();
+        if (!PerformceStatminaAction(15)) return;
+
         animator.SetTrigger("jump");
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         jumped = true;
@@ -166,6 +204,8 @@ public class BaseCharacterBehavior : MonoBehaviour
     public void PerformGuard()
     {
         if (!isGround || isQuickstepping) return;
+        if (!PerformceStatminaAction(3)) return;
+
         guardCancelTween.Kill();
         isGuarding = true;
         animator.SetBool("isGuard", true);
@@ -186,6 +226,8 @@ public class BaseCharacterBehavior : MonoBehaviour
     public void PerformPunchAttack()
     {
         if (!isGround || isAttacking || isQuickstepping) return;
+        if (!PerformceStatminaAction(5)) return;
+
         animator.SetTrigger("punch");
         isAttacking = true;
         attackTween.Kill();
@@ -198,6 +240,8 @@ public class BaseCharacterBehavior : MonoBehaviour
     public void PerformKickAttack()
     {
         if (!isGround || isQuickstepping || isAttacking) return;
+        if (!PerformceStatminaAction(10)) return;
+
         animator.SetTrigger("kick");
         isAttacking = true;
         attackTween.Kill();
@@ -206,5 +250,45 @@ public class BaseCharacterBehavior : MonoBehaviour
             isAttacking = false;
         });
     }
+
+    public void PerformSkill()
+    {
+        if (!isGround || isQuickstepping || isAttacking) return;
+        if (!PerformceAuraAction(30)) return;
+
+        animator.SetTrigger("skill");
+    }
+
+    public void PerformUltimate()
+    {
+        if (!isGround || isQuickstepping || isAttacking) return;
+        if (!PerformceAuraAction(90)) return;
+
+        animator.SetTrigger("ultimate");
+    }
     #endregion
+
+    Tween recoverTween;
+    bool PerformceStatminaAction(int amount)
+    {
+        if (isTired) return false; // can't performce action while being tired
+
+        if(!stat.CostStamina(amount)) // run out of stamnia but still let character performce the final action
+        {
+            isTired = true;
+            animator.SetBool("isTired", true);
+            recoverTween = DOVirtual.DelayedCall(recoverTime, ()=>
+            {
+                isTired = false;
+                animator.SetBool("isTired", false);
+            });
+        }
+
+        return true;
+    }
+
+    bool PerformceAuraAction(int amount)
+    {
+        return stat.CostAura(amount);
+    }
 }
