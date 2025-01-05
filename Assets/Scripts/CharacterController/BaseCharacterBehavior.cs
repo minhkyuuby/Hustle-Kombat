@@ -68,7 +68,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     bool isInputMoving = false;
     void handleMovement()
     {
-        if (!isGround || isQuickstepping || isGuarding || isAttacking || isUsingSkill) return;
+        if (!isGround || isQuickstepping || isGuarding || isAttacking || isUsingSkill || isTired) return;
 
         moveInputAbs = Mathf.Abs(moveDirection.x);
 
@@ -322,6 +322,7 @@ public class BaseCharacterBehavior : MonoBehaviour
         if(!stat.CostStamina(amount)) // run out of stamnia but still let character performce the final action
         {
             isTired = true;
+            //rb.linearVelocity = Vector2.zero;
             animator.SetBool("isTired", true);
             recoverTween = DOVirtual.DelayedCall(recoverTime, ()=>
             {
