@@ -1,7 +1,5 @@
 using DG.Tweening;
 using UnityEngine;
-using UnityEngine.InputSystem.Processors;
-using static UnityEngine.Rendering.DebugUI;
 
 public class BaseCharacterBehavior : MonoBehaviour
 {
@@ -22,6 +20,11 @@ public class BaseCharacterBehavior : MonoBehaviour
     public float jumpForce = 10f;
     public float hitRecoverTime = .2f;
     public float recoverTime = 1.5f;
+    public bool isUsingSkill = false;
+
+    [Header("Scene References")]
+    public GroupCameraHandler groupCameraHandler;
+    public int targetIndex;
 
     #region VARIABLES
     Vector2 moveDirection = Vector2.zero;
@@ -48,8 +51,6 @@ public class BaseCharacterBehavior : MonoBehaviour
     void FixedUpdate()
     {
         isGround = groundChecker.transform.position.y <= 0.15f;
-        //isAttacking = 
-        Debug.Log(animator.GetCurrentAnimatorStateInfo(0).shortNameHash.ToString());
 
         animator.SetBool("isGround", isGround);
         handleMovement();
@@ -67,7 +68,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     bool isInputMoving = false;
     void handleMovement()
     {
-        if (!isGround || isQuickstepping || isGuarding || isAttacking) return;
+        if (!isGround || isQuickstepping || isGuarding || isAttacking || isUsingSkill) return;
 
         moveInputAbs = Mathf.Abs(moveDirection.x);
 
@@ -115,29 +116,55 @@ public class BaseCharacterBehavior : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        HandleHit(other.gameObject);
+    }
+
+    private void OnParticleCollision(GameObject other)
+    {
+        HandleHit(other.gameObject);
+    }
+
+    void HandleHit(GameObject impact)
+    {
         if (isHit) return;
 
-        if (other.gameObject.CompareTag("Impact"))
+        if (impact.CompareTag("Impact"))
         {
-            if (other.TryGetComponent(out DamageApplier dmg))
+            if (impact.TryGetComponent(out DamageApplier dmg))
             {
                 if (dmg.sourceObject != gameObject)
                 {
+                    if (isGuarding && !dmg.isKnockDamage) // attack impact is blocked
+                    {
+                        stat.LoseHeath(dmg.damageValue / 5f);
+                        stat.GainAura(1f);
+                        dmg.GainAuraSourceObject(2f);
+                        return;
+                    }
+
                     isHit = true;
                     hitRecoverTween = DOVirtual.DelayedCall(hitRecoverTime, () =>
                     {
                         isHit = false;
                     });
 
-                    if(stat.LoseHeath(dmg.damageValue))
-                    {
-                        animator.SetTrigger("hit");
-                    } else
-                    {
-                        animator.SetTrigger("death");
-                    }
+                    stat.GainAura(0.5f);
+                    dmg.GainAuraSourceObject(3f);
+                    HandleLoseHealthAnim(dmg.damageValue, dmg.isKnockDamage);
                 }
             };
+        }
+    }
+
+    void HandleLoseHealthAnim(float amount, bool isKnock)
+    {
+        if (stat.LoseHeath(amount))
+        {
+            animator.SetTrigger(isKnock ? "knock" : "hit");
+        }
+        else
+        {
+            animator.SetTrigger("death");
         }
     }
 
@@ -203,7 +230,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     Tween guardCancelTween;
     public void PerformGuard()
     {
-        if (!isGround || isQuickstepping) return;
+        if (!isGround || isQuickstepping || isUsingSkill) return;
         if (!PerformceStatminaAction(3)) return;
 
         guardCancelTween.Kill();
@@ -253,19 +280,38 @@ public class BaseCharacterBehavior : MonoBehaviour
 
     public void PerformSkill()
     {
-        if (!isGround || isQuickstepping || isAttacking) return;
+        if (!isGround || jumped || isQuickstepping || isAttacking || isTired || isUsingSkill) return;
         if (!PerformceAuraAction(30)) return;
 
+        //SetMoveDirection(Vector2.zero);
+        isUsingSkill = true;
         animator.SetTrigger("skill");
     }
 
     public void PerformUltimate()
     {
-        if (!isGround || isQuickstepping || isAttacking) return;
-        if (!PerformceAuraAction(90)) return;
-
+        if (!isGround || jumped || isQuickstepping || isAttacking || isTired || isUsingSkill) return;
+        if (!PerformceAuraAction(75)) return;
+        //SetMoveDirection(Vector2.zero);
+        isUsingSkill = true;
         animator.SetTrigger("ultimate");
     }
+
+    public GameObject skillProjectile;
+    public void ExecuteSkill(Vector3 position, Quaternion rotation) // called when skill is sucessfully performed
+    {
+        Debug.Log("Execute Skill");
+        Instantiate(skillProjectile, position, rotation);
+    }
+
+    public GameObject ultimateImpactObject;
+    public void ExecuteUltimate(Vector3 position, Quaternion rotation) // called when skill is sucessfully performed
+    {
+        Debug.Log("Execute Ultimate");
+        groupCameraHandler.SetRadiusThenRestore(targetIndex, 3.5f, 1.2f);
+        Instantiate(ultimateImpactObject, position, rotation);
+    }
+
     #endregion
 
     Tween recoverTween;

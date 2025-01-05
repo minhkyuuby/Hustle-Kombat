@@ -5,15 +5,18 @@ public class Stat : MonoBehaviour
 {
     public Action<float, float, float> OnStatChange;
 
-    float healthPoint = 100;
-    float stamina = 100;
-    float aura = 10;
+    public bool skillFree = false;
 
-    public int healthPointMax = 100;
-    public int staminaMax = 100;
-    public int auraMax = 10;
+    [SerializeField] float healthPoint = 100;
+    [SerializeField] float stamina = 100;
+    [SerializeField] float aura = 100;
+
+    public float healthPointMax = 100;
+    public float staminaMax = 100;
+    public float auraMax = 100;
 
     public float stamniaFillrate = 10;
+    public float auraFillrate = 3;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -24,6 +27,7 @@ public class Stat : MonoBehaviour
     private void FixedUpdate()
     {
         StaminaRefill();
+        AuraRefill();
     }
 
     public void InitValue()
@@ -79,6 +83,7 @@ public class Stat : MonoBehaviour
 
     public bool CostAura(int amount)
     {
+        if(skillFree) return true;
         if (aura < amount)
             return false;
 
@@ -87,10 +92,22 @@ public class Stat : MonoBehaviour
         return true;
     }
 
-    public void GainAura(int amount)
+    void AuraRefill() // auto refill stamina
     {
+        if (aura < auraMax)
+        {
+            aura += auraFillrate * Time.fixedDeltaTime;
+            aura = Mathf.Clamp(aura, 0, auraMax);
+            OnStatChangeInVoke();
+        }
+    }
+
+    public void GainAura(float amount)
+    {
+        Debug.Log($"gain aura amount {amount}");
         aura += amount;
-        aura += Math.Clamp(aura, 0, auraMax);
+        aura = Mathf.Clamp(aura, 0, auraMax);
+        Debug.Log($"aura after gained {aura}");
         OnStatChangeInVoke();
     }
 
