@@ -59162,7 +59162,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sourceObject: {fileID: 0}
-  damageValue: 65
+  damageValue: 75
   isKnockDamage: 1
 --- !u!1 &1560582813886942
 GameObject:

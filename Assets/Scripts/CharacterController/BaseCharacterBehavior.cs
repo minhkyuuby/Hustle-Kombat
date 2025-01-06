@@ -14,6 +14,8 @@ public class BaseCharacterBehavior : MonoBehaviour
 
     [SerializeField]
     private GameObject groundChecker;
+    [SerializeField]
+    private GameObject tiredVFX;
 
     public float moveSpeed = 5f;
     public float quickStepSpeed = 15f;
@@ -234,6 +236,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     {
         if (jumped || !isGround || isAttacking) return;
         CancelQuickstep();
+        handleMovement();
         if (!PerformStatminaAction(15)) return;
 
         animator.SetTrigger("jump");
@@ -333,7 +336,10 @@ public class BaseCharacterBehavior : MonoBehaviour
     {
         Debug.Log("Execute Ultimate");
         groupCameraHandler.SetRadiusThenRestore(targetIndex, 3.8f, 1.2f);
-        Instantiate(ultimateImpactObject, position, rotation);
+        var instance =  Instantiate(ultimateImpactObject, position, rotation);
+        if(instance.TryGetComponent(out DamageApplier dmg)) {
+            dmg.sourceObject = gameObject;
+        }
     }
 
     #endregion
@@ -347,11 +353,13 @@ public class BaseCharacterBehavior : MonoBehaviour
         if(!stat.CostStamina(amount)) // run out of stamnia but still let character perform the final action
         {
             isTired = true;
+            tiredVFX.SetActive(true);
             //rb.linearVelocity = Vector2.zero;
             animator.SetBool("isTired", true);
             recoverTween = DOVirtual.DelayedCall(recoverTime, ()=>
             {
                 isTired = false;
+                tiredVFX.SetActive(false);
                 animator.SetBool("isTired", false);
             });
         }
