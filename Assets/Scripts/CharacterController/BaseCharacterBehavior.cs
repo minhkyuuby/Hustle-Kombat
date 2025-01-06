@@ -19,12 +19,14 @@ public class BaseCharacterBehavior : MonoBehaviour
     public float quickStepSpeed = 15f;
     public float jumpForce = 10f;
     public float hitRecoverTime = .2f;
+    public float knockRecoverTime = .8f;
     public float recoverTime = 1.5f;
     public bool isUsingSkill = false;
 
     [Header("Scene References")]
     public GroupCameraHandler groupCameraHandler;
     public int targetIndex;
+    public bool facingRight = true;
 
     #region VARIABLES
     Vector2 moveDirection = Vector2.zero;
@@ -37,6 +39,9 @@ public class BaseCharacterBehavior : MonoBehaviour
     bool isInvincible = false;
 
     bool isHit = false;
+    bool isKnocked = false;
+    public bool IsKnocked => isKnocked;
+
     bool isTired = false;
     #endregion
 
@@ -68,7 +73,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     bool isInputMoving = false;
     void handleMovement()
     {
-        if (!isGround || isQuickstepping || isGuarding || isAttacking || isUsingSkill || isTired) return;
+        if (!isGround || isQuickstepping || isGuarding || isAttacking || isUsingSkill || isTired || isHit || isKnocked) return;
 
         moveInputAbs = Mathf.Abs(moveDirection.x);
 
@@ -96,7 +101,7 @@ public class BaseCharacterBehavior : MonoBehaviour
             isInputMoving = true;
             moveSide = moveDirection.x > 0 ? 1 : -1;
 
-            animator.SetFloat("horizontalMove", moveDirection.x);
+            animator.SetFloat("horizontalMove", facingRight ? moveDirection.x : moveDirection.x * -1f);
             animator.SetFloat("moveAnimSpeed", Mathf.Clamp(Mathf.Abs(moveInputAbs), 0.5f, 1f));
         }
 
@@ -134,7 +139,7 @@ public class BaseCharacterBehavior : MonoBehaviour
             {
                 if (dmg.sourceObject != gameObject)
                 {
-                    if (isGuarding && !dmg.isKnockDamage) // attack impact is blocked
+                    if (isGuarding && !dmg.isKnockDamage && PerformStatminaAction(15)) // attack impact is blocked
                     {
                         stat.LoseHeath(dmg.damageValue / 5f);
                         stat.GainAura(1f);
@@ -148,6 +153,15 @@ public class BaseCharacterBehavior : MonoBehaviour
                         isHit = false;
                     });
 
+                    if (dmg.isKnockDamage)
+                    {
+                        GuardCancel();
+                        isKnocked = true;
+                        DOVirtual.DelayedCall(knockRecoverTime, () =>
+                        {
+                            isKnocked = false;
+                        });
+                    }
                     stat.GainAura(0.5f);
                     dmg.GainAuraSourceObject(3f);
                     HandleLoseHealthAnim(dmg.damageValue, dmg.isKnockDamage);
@@ -170,7 +184,7 @@ public class BaseCharacterBehavior : MonoBehaviour
 
     #region PUBLIC METHODS
     public void SetMoveDirection(Vector2 value) {
-        if(isTired)
+        if (isTired)
         {
             moveDirection = new Vector2(0, 0);
             return;
@@ -183,7 +197,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     {
         if (!isGround || isQuickstepping || isGuarding) return;
 
-        if (!PerformceStatminaAction(20)) return;
+        if (!PerformStatminaAction(20)) return;
 
         if (direction.x > 0f)
         {
@@ -216,7 +230,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     {
         if (jumped || !isGround || isAttacking) return;
         CancelQuickstep();
-        if (!PerformceStatminaAction(15)) return;
+        if (!PerformStatminaAction(15)) return;
 
         animator.SetTrigger("jump");
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
@@ -230,8 +244,8 @@ public class BaseCharacterBehavior : MonoBehaviour
     Tween guardCancelTween;
     public void PerformGuard()
     {
-        if (!isGround || isQuickstepping || isUsingSkill) return;
-        if (!PerformceStatminaAction(3)) return;
+        if (!isGround || isQuickstepping || isUsingSkill || isHit || isKnocked) return;
+        if (!PerformStatminaAction(3)) return;
 
         guardCancelTween.Kill();
         isGuarding = true;
@@ -253,7 +267,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     public void PerformPunchAttack()
     {
         if (!isGround || isAttacking || isQuickstepping) return;
-        if (!PerformceStatminaAction(5)) return;
+        if (!PerformStatminaAction(5)) return;
 
         animator.SetTrigger("punch");
         isAttacking = true;
@@ -267,7 +281,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     public void PerformKickAttack()
     {
         if (!isGround || isQuickstepping || isAttacking) return;
-        if (!PerformceStatminaAction(10)) return;
+        if (!PerformStatminaAction(10)) return;
 
         animator.SetTrigger("kick");
         isAttacking = true;
@@ -281,7 +295,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     public void PerformSkill()
     {
         if (!isGround || jumped || isQuickstepping || isAttacking || isTired || isUsingSkill) return;
-        if (!PerformceAuraAction(30)) return;
+        if (!PerformAuraAction(30)) return;
 
         //SetMoveDirection(Vector2.zero);
         isUsingSkill = true;
@@ -291,7 +305,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     public void PerformUltimate()
     {
         if (!isGround || jumped || isQuickstepping || isAttacking || isTired || isUsingSkill) return;
-        if (!PerformceAuraAction(75)) return;
+        if (!PerformAuraAction(75)) return;
         //SetMoveDirection(Vector2.zero);
         isUsingSkill = true;
         animator.SetTrigger("ultimate");
@@ -315,11 +329,11 @@ public class BaseCharacterBehavior : MonoBehaviour
     #endregion
 
     Tween recoverTween;
-    bool PerformceStatminaAction(int amount)
+    bool PerformStatminaAction(int amount)
     {
-        if (isTired) return false; // can't performce action while being tired
+        if (isTired) return false; // can't perform action while being tired
 
-        if(!stat.CostStamina(amount)) // run out of stamnia but still let character performce the final action
+        if(!stat.CostStamina(amount)) // run out of stamnia but still let character perform the final action
         {
             isTired = true;
             //rb.linearVelocity = Vector2.zero;
@@ -334,7 +348,7 @@ public class BaseCharacterBehavior : MonoBehaviour
         return true;
     }
 
-    bool PerformceAuraAction(int amount)
+    bool PerformAuraAction(int amount)
     {
         return stat.CostAura(amount);
     }
