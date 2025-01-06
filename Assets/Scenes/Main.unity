@@ -1917,7 +1917,7 @@ MonoBehaviour:
   quickStepSpeed: 8
   jumpForce: 10
   hitRecoverTime: 0.2
-  knockRecoverTime: 0.8
+  knockRecoverTime: 1.3
   recoverTime: 3.5
   isUsingSkill: 0
   groupCameraHandler: {fileID: 1873980960}
@@ -2953,7 +2953,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09c7751e854392542bbf53cc69a6e6cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  behavior: {fileID: 8073086774255446580}
+  behavior: {fileID: 0}
+--- !u!114 &2042526437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2042526433}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10105316d98428445a8ad2265d98c325, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rb: {fileID: 2042526434}
+  animator: {fileID: 1446955188}
+  stat: {fileID: 8073086774255446583}
+  groundChecker: {fileID: 1593431291}
+  moveSpeed: 3.2
+  quickStepSpeed: 8
+  jumpForce: 12
+  hitRecoverTime: 0.2
+  knockRecoverTime: 1.3
+  recoverTime: 3.5
+  isUsingSkill: 0
+  groupCameraHandler: {fileID: 1873980960}
+  targetIndex: 0
+  facingRight: 1
+  skillProjectile: {fileID: 1481587283673810, guid: 8602f058556176049aad91edcf55876c, type: 3}
+  ultimateImpactObject: {fileID: 1383950886581822, guid: f17a559c3e5157c47877540a041487b7, type: 3}
 --- !u!1 &2094663073
 GameObject:
   m_ObjectHideFlags: 0
@@ -3075,6 +3103,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1721077074315772, guid: 22e92f5b42f1fee4eb9e3d26cdf1f96d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2042526436}
+    - targetCorrespondingSourceObject: {fileID: 1721077074315772, guid: 22e92f5b42f1fee4eb9e3d26cdf1f96d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2042526437}
     - targetCorrespondingSourceObject: {fileID: 1430760096230978, guid: 22e92f5b42f1fee4eb9e3d26cdf1f96d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 955983871}
@@ -3098,7 +3129,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8073086774255446579}
   - component: {fileID: 8073086774255446583}
-  - component: {fileID: 8073086774255446580}
   - component: {fileID: 8073086774255446582}
   - component: {fileID: 8073086774255446581}
   m_Layer: 0
@@ -3118,7 +3148,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8073086774379804041}
   - component: {fileID: 8073086774379804045}
-  - component: {fileID: 8073086774379804046}
   m_Layer: 0
   m_Name: Opponent
   m_TagString: Untagged
@@ -3142,34 +3171,6 @@ Transform:
   - {fileID: 1446955187}
   m_Father: {fileID: 1234893362}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
---- !u!114 &8073086774255446580
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4132312773898016893}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 10105316d98428445a8ad2265d98c325, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rb: {fileID: 2042526434}
-  animator: {fileID: 1446955188}
-  stat: {fileID: 8073086774255446583}
-  groundChecker: {fileID: 1593431291}
-  moveSpeed: 3.2
-  quickStepSpeed: 8
-  jumpForce: 12
-  hitRecoverTime: 0.2
-  knockRecoverTime: 0.8
-  recoverTime: 3.5
-  isUsingSkill: 0
-  groupCameraHandler: {fileID: 1873980960}
-  targetIndex: 0
-  facingRight: 1
-  skillProjectile: {fileID: 1481587283673810, guid: 8602f058556176049aad91edcf55876c, type: 3}
-  ultimateImpactObject: {fileID: 1383950886581822, guid: f17a559c3e5157c47877540a041487b7, type: 3}
 --- !u!114 &8073086774255446581
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3372,7 +3373,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c65fa47ba4bf784b87b4828cc15f212, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterBehavior: {fileID: 8073086774255446580}
+  characterBehavior: {fileID: 2042526437}
   quickstepDistance: 2
   quickstepInputCD: 0.25
   quickstepCooldown: 0.3
@@ -3435,52 +3436,6 @@ MonoBehaviour:
   auraMax: 100
   stamniaFillrate: 8
   auraFillrate: 3
---- !u!114 &8073086774379804046
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4132312773993007047}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0038c16c34866b4f9e25c9c0dc0f7e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Graph: {fileID: 3296209488589050425, guid: 8cb4dc1b256f6374a9a2bb2db1884c16, type: 2}
-  m_BlackboardVariableOverridesList:
-  - rid: 6431786919176962359
-  - rid: 6431786919176962360
-  - rid: 6431786919176962460
-  m_IsInitialised: 0
-  m_IsStarted: 0
-  references:
-    version: 2
-    RefIds:
-    - rid: 6431786919176962359
-      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
-      data:
-        GUID:
-          m_Value0: 1
-          m_Value1: 0
-        Name: Self
-        m_Value: {fileID: 4132312773993007047}
-    - rid: 6431786919176962360
-      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
-      data:
-        GUID:
-          m_Value0: 1843574978280657800
-          m_Value1: 6647784415784201220
-        Name: Target
-        m_Value: {fileID: 2042526433}
-    - rid: 6431786919176962460
-      type: {class: 'BlackboardVariable`1[[BaseCharacterBehavior, Assembly-CSharp]]', ns: Unity.Behavior, asm: Unity.Behavior}
-      data:
-        GUID:
-          m_Value0: 3274629528342917379
-          m_Value1: 14420164899150520460
-        Name: Self Behavior
-        m_Value: {fileID: 1168122356}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
