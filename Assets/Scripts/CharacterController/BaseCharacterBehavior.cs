@@ -35,14 +35,18 @@ public class BaseCharacterBehavior : MonoBehaviour
     bool isGuarding = false;
 
     bool isAttacking = false;
+    public bool IsAttacking => isAttacking;
 
     bool isInvincible = false;
 
     bool isHit = false;
+    public bool IsHit => isHit;
+
     bool isKnocked = false;
     public bool IsKnocked => isKnocked;
 
     bool isTired = false;
+    public bool IsTired => isTired;
     #endregion
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -184,7 +188,7 @@ public class BaseCharacterBehavior : MonoBehaviour
 
     #region PUBLIC METHODS
     public void SetMoveDirection(Vector2 value) {
-        if (isTired)
+        if (isTired || isHit)
         {
             moveDirection = new Vector2(0, 0);
             return;
@@ -195,7 +199,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     Tween quickstepTween;
     public void TriggerQuickStep(Vector3 direction)
     {
-        if (!isGround || isQuickstepping || isGuarding) return;
+        if (!isGround || isQuickstepping || isGuarding || isKnocked) return;
 
         if (!PerformStatminaAction(20)) return;
 
@@ -266,7 +270,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     Tween attackTween;
     public void PerformPunchAttack()
     {
-        if (!isGround || isAttacking || isQuickstepping) return;
+        if (!isGround || isAttacking || isQuickstepping || isHit || isKnocked) return;
         if (!PerformStatminaAction(5)) return;
 
         animator.SetTrigger("punch");
@@ -280,7 +284,7 @@ public class BaseCharacterBehavior : MonoBehaviour
 
     public void PerformKickAttack()
     {
-        if (!isGround || isQuickstepping || isAttacking) return;
+        if (!isGround || isQuickstepping || isAttacking || isHit || isKnocked) return;
         if (!PerformStatminaAction(10)) return;
 
         animator.SetTrigger("kick");
@@ -292,9 +296,10 @@ public class BaseCharacterBehavior : MonoBehaviour
         });
     }
 
+    // SKILLS
     public void PerformSkill()
     {
-        if (!isGround || jumped || isQuickstepping || isAttacking || isTired || isUsingSkill) return;
+        if (!isGround || jumped || isQuickstepping || isAttacking || isTired || isUsingSkill || isKnocked) return;
         if (!PerformAuraAction(30)) return;
 
         //SetMoveDirection(Vector2.zero);
@@ -304,7 +309,7 @@ public class BaseCharacterBehavior : MonoBehaviour
 
     public void PerformUltimate()
     {
-        if (!isGround || jumped || isQuickstepping || isAttacking || isTired || isUsingSkill) return;
+        if (!isGround || jumped || isQuickstepping || isAttacking || isTired || isUsingSkill || isKnocked) return;
         if (!PerformAuraAction(75)) return;
         //SetMoveDirection(Vector2.zero);
         isUsingSkill = true;
@@ -312,6 +317,11 @@ public class BaseCharacterBehavior : MonoBehaviour
     }
 
     public GameObject skillProjectile;
+
+    public void ExecuteSkill() { }
+
+    public void ExecuteUltimate() { }
+
     public void ExecuteSkill(Vector3 position, Quaternion rotation) // called when skill is sucessfully performed
     {
         Debug.Log("Execute Skill");
@@ -322,12 +332,13 @@ public class BaseCharacterBehavior : MonoBehaviour
     public void ExecuteUltimate(Vector3 position, Quaternion rotation) // called when skill is sucessfully performed
     {
         Debug.Log("Execute Ultimate");
-        groupCameraHandler.SetRadiusThenRestore(targetIndex, 3.5f, 1.2f);
+        groupCameraHandler.SetRadiusThenRestore(targetIndex, 3.8f, 1.2f);
         Instantiate(ultimateImpactObject, position, rotation);
     }
 
     #endregion
 
+    #region Cost functions
     Tween recoverTween;
     bool PerformStatminaAction(int amount)
     {
@@ -352,4 +363,6 @@ public class BaseCharacterBehavior : MonoBehaviour
     {
         return stat.CostAura(amount);
     }
+
+    #endregion
 }

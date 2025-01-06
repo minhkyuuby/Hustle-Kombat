@@ -7,9 +7,11 @@ public class Stat : MonoBehaviour
 
     public bool skillFree = false;
 
+
     [SerializeField] float healthPoint = 100;
     [SerializeField] float stamina = 100;
     [SerializeField] float aura = 100;
+    [SerializeField] GameObject auraVFX;
 
     public float healthPointMax = 100;
     public float staminaMax = 100;
@@ -34,7 +36,7 @@ public class Stat : MonoBehaviour
     {
         healthPoint = healthPointMax;
         stamina = staminaMax;
-        aura = auraMax;
+        aura = auraMax/2f;
         OnStatChangeInVoke();
     }
 
@@ -98,16 +100,23 @@ public class Stat : MonoBehaviour
         {
             aura += auraFillrate * Time.fixedDeltaTime;
             aura = Mathf.Clamp(aura, 0, auraMax);
+
+            if(aura < 30)
+            {
+                auraVFX.SetActive(false);
+            } else
+            {
+                auraVFX.transform.localScale = aura >= 80 ? Vector3.one : Vector3.one * (aura/80);
+                auraVFX.SetActive(true);
+            }
             OnStatChangeInVoke();
         }
     }
 
     public void GainAura(float amount)
     {
-        Debug.Log($"gain aura amount {amount}");
         aura += amount;
         aura = Mathf.Clamp(aura, 0, auraMax);
-        Debug.Log($"aura after gained {aura}");
         OnStatChangeInVoke();
     }
 

@@ -5,19 +5,25 @@ using Action = Unity.Behavior.Action;
 using Unity.Properties;
 
 [Serializable, GeneratePropertyBag]
-[NodeDescription(name: "QuickStep", story: "[SelfBehavior] QuickStep to [rightDirection]", category: "Action", id: "5d152cb686ef279fa15cd37411373930")]
-public partial class QuickStepAction : Action
+[NodeDescription(name: "TryUltimate", story: "[SelfBehavior] try to use ultimate", category: "Action", id: "3474a040889af8a93162070bc5a3d3d3")]
+public partial class TryUltimateAction : Action
 {
     [SerializeReference] public BlackboardVariable<BaseCharacterBehavior> SelfBehavior;
-    [SerializeReference] public BlackboardVariable<bool> RightDirection;
+
     protected override Status OnStart()
     {
-        SelfBehavior.Value.TriggerQuickStep(RightDirection ? Vector3.right : Vector3.left);
+        if (SelfBehavior.Value.isUsingSkill)
+            return Status.Failure;
+
+        SelfBehavior.Value.PerformUltimate();
         return Status.Running;
     }
 
     protected override Status OnUpdate()
     {
+        if (SelfBehavior.Value.isUsingSkill)
+            return Status.Running;
+
         return Status.Success;
     }
 

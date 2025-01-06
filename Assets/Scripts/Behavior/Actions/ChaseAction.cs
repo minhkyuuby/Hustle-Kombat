@@ -20,6 +20,7 @@ public partial class ChaseAction : Action
     {
         if (Self.Value.IsKnocked)
             return Status.Failure;
+
         characterBehavior = Self.Value;
         chaseTime = Random.Range(Min, Max);
         return Status.Running;
@@ -27,7 +28,7 @@ public partial class ChaseAction : Action
 
     protected override Status OnUpdate()
     {
-        if (Self.Value.IsKnocked)
+        if (Self.Value.IsKnocked || Self.Value.IsHit || Self.Value.IsTired)
             return Status.Failure;
 
         chaseTime -= Time.deltaTime;
@@ -39,7 +40,7 @@ public partial class ChaseAction : Action
 
     protected override void OnEnd()
     {
-        characterBehavior.SetMoveDirection(Vector3.zero);
+        Self.Value.SetMoveDirection(Vector3.zero);
     }
 }
 

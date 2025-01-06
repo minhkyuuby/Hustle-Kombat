@@ -6,41 +6,38 @@ using Unity.Properties;
 using Random = UnityEngine.Random;
 
 [Serializable, GeneratePropertyBag]
-[NodeDescription(name: "TryBlock", story: "[SelfBehavior] try block for [min] to [max] seconds", category: "Action", id: "c248f223ff53620902d2a9ee6a4199bc")]
-public partial class TryBlockAction : Action
+[NodeDescription(name: "Backstep", story: "[SelfBehavior] backstep in between [min] and [max] seconds", category: "Action", id: "e682821cabc377e5710c98790a87293f")]
+public partial class BackstepAction : Action
 {
     [SerializeReference] public BlackboardVariable<BaseCharacterBehavior> SelfBehavior;
     [SerializeReference] public BlackboardVariable<float> Min;
     [SerializeReference] public BlackboardVariable<float> Max;
-    float guardTime;
 
+    float backTime;
     protected override Status OnStart()
     {
         if (SelfBehavior.Value.IsKnocked)
             return Status.Failure;
 
-        SelfBehavior.Value.PerformGuard();
-        guardTime = Random.Range(Min, Max);
+        backTime = Random.Range(Min, Max);
         return Status.Running;
     }
 
     protected override Status OnUpdate()
     {
-        if (SelfBehavior.Value.IsKnocked)
+        if (SelfBehavior.Value.IsKnocked || SelfBehavior.Value.IsHit || SelfBehavior.Value.IsTired)
             return Status.Failure;
 
-        guardTime -= Time.deltaTime;
-        if (guardTime < 0f)
-        {
-            return Status.Success;
-        }
+        backTime -= Time.deltaTime;
+        if (backTime <= 0f) return Status.Success;
 
+        SelfBehavior.Value.SetMoveDirection(Vector3.left);
         return Status.Running;
     }
 
     protected override void OnEnd()
     {
-        SelfBehavior.Value.GuardCancel();
+        SelfBehavior.Value.SetMoveDirection(Vector3.zero);
     }
 }
 

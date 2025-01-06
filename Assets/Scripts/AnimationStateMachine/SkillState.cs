@@ -8,7 +8,7 @@ public class SkillState : StateMachineBehaviour
     {
         if(characterBehavior == null)
         {
-            characterBehavior = animator.gameObject.GetComponentInParent<BaseCharacterBehavior>();
+            characterBehavior = animator.gameObject.GetComponent<BaseCharacterBehavior>();
         }
     }
 
