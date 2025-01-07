@@ -16,6 +16,10 @@ public class BaseCharacterBehavior : MonoBehaviour
     private GameObject groundChecker;
     [SerializeField]
     private GameObject tiredVFX;
+    [SerializeField]
+    private ParticleSystem hitVFX;
+    [SerializeField]
+    private ParticleSystem guradVFX;
 
     public float moveSpeed = 5f;
     public float quickStepSpeed = 15f;
@@ -152,6 +156,7 @@ public class BaseCharacterBehavior : MonoBehaviour
                         stat.LoseHeath(dmg.damageValue / 5f);
                         stat.GainAura(1f);
                         dmg.GainAuraSourceObject(2f);
+                        guradVFX.Play();
                         return;
                     }
 
@@ -180,6 +185,7 @@ public class BaseCharacterBehavior : MonoBehaviour
 
     void HandleLoseHealthAnim(float amount, bool isKnock)
     {
+        hitVFX.Play();
         if (stat.LoseHeath(amount))
         {
             animator.SetTrigger(isKnock ? "knock" : "hit");
