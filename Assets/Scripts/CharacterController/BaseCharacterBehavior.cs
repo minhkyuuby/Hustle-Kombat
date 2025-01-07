@@ -29,6 +29,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     public GroupCameraHandler groupCameraHandler;
     public int targetIndex;
     public bool facingRight = true;
+    public bool isPlayer = false;
 
     #region VARIABLES
     Vector2 moveDirection = Vector2.zero;
@@ -125,6 +126,7 @@ public class BaseCharacterBehavior : MonoBehaviour
     #endregion
     Tween hitRecoverTween;
 
+    #region OnImpact & collision
     private void OnTriggerEnter(Collider other)
     {
         HandleHit(other.gameObject);
@@ -185,8 +187,10 @@ public class BaseCharacterBehavior : MonoBehaviour
         else
         {
             animator.SetTrigger("death");
+            GameManager.instance.FinishGame(!isPlayer);
         }
     }
+    #endregion
 
     #region PUBLIC METHODS
     public void SetMoveDirection(Vector2 value) {
@@ -370,6 +374,27 @@ public class BaseCharacterBehavior : MonoBehaviour
     bool PerformAuraAction(int amount)
     {
         return stat.CostAura(amount);
+    }
+
+    #endregion
+
+    #region On Game Events
+    private void OnEnable()
+    {
+        GameManager.OnFinishAction += OnGameFinish;
+    }
+
+    private void OnDisable()
+    {
+        GameManager.OnFinishAction -= OnGameFinish;
+    }
+
+    void OnGameFinish(bool won)
+    {
+        if(won == isPlayer)
+        {
+            animator.SetTrigger("victory");
+        }
     }
 
     #endregion
